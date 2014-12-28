@@ -34,6 +34,14 @@ def all_sets
   rows + cols + grids
 end
 
+def dup_array array
+  array.map do |row|
+    row.map do |value|
+      value
+    end
+  end
+end
+
 def valid? grid
   all_sets.all? do |set|
     no_dups? grid, set
@@ -82,11 +90,17 @@ describe Sudoku::Grid do
   end
 
   describe "#seed" do
-    it "should seed the grid" do
+    before :each do 
       grid.seed
-      seeds = grid.to_a.flatten.reject { |n| n.nil? }
+    end
 
+    it "should seed the grid" do
+      seeds = grid.to_a.flatten.reject { |n| n.nil? }
       assert_equal 11, seeds.count
+    end
+
+    it "should be a valid grid" do
+      assert_equal true, valid?(grid)
     end
   end
 
@@ -99,6 +113,57 @@ describe Sudoku::Grid do
     it "should detect an invalid puzzle" do
       grid.array = invalid
       assert_equal false, grid.valid?
+    end
+  end
+
+  describe "#next_empty" do
+    let(:first) do
+      tmp = dup_array valid
+      tmp[0][0] = nil
+      Sudoku::Grid.new array: tmp
+    end
+
+    let(:other) do
+      tmp = dup_array valid
+      tmp[5][3] = nil
+      Sudoku::Grid.new array: tmp
+    end
+
+    it "returns the next 'sequential' empty cell" do
+      assert_equal [0,0], first.first_empty
+      assert_equal [5,3], other.first_empty
+    end
+  end
+
+  describe "#complete" do
+    let(:complete) do
+      Sudoku::Grid.new array: valid
+    end
+
+    let(:incomplete) do
+      tmp = dup_array valid
+      tmp[0][0] = nil
+      Sudoku::Grid.new array: tmp
+    end
+
+    it "should detect a complete grid" do
+      assert_equal true, complete.complete?
+    end
+
+    it "should detect an incomplete grid" do
+      assert_equal false, incomplete.complete?
+    end
+  end
+
+  describe "#dup" do
+    let(:grid_clone) { grid.dup }
+
+    it "should create a new object" do
+      refute_same grid, grid_clone
+    end
+
+    it "they should be equivalent" do
+      assert_equal true, grid == grid_clone
     end
   end
 

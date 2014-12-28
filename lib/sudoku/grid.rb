@@ -1,16 +1,50 @@
 require_relative '../sudoku'
 
 class Sudoku::Grid
-  attr_accessor :size, :givens, :array
+  attr_accessor :givens, :array
+
+  ALL_ORDS = (0...9).map do |x|
+    (0...9).map do |y|
+      [x, y]
+    end
+  end.flatten(1)
+
+  ALL_SETS = [
+    [[0, 0], [0, 1], [0, 2], [0, 3], [0, 4], [0, 5], [0, 6], [0, 7], [0, 8]],
+    [[1, 0], [1, 1], [1, 2], [1, 3], [1, 4], [1, 5], [1, 6], [1, 7], [1, 8]],
+    [[2, 0], [2, 1], [2, 2], [2, 3], [2, 4], [2, 5], [2, 6], [2, 7], [2, 8]],
+    [[3, 0], [3, 1], [3, 2], [3, 3], [3, 4], [3, 5], [3, 6], [3, 7], [3, 8]],
+    [[4, 0], [4, 1], [4, 2], [4, 3], [4, 4], [4, 5], [4, 6], [4, 7], [4, 8]],
+    [[5, 0], [5, 1], [5, 2], [5, 3], [5, 4], [5, 5], [5, 6], [5, 7], [5, 8]],
+    [[6, 0], [6, 1], [6, 2], [6, 3], [6, 4], [6, 5], [6, 6], [6, 7], [6, 8]],
+    [[7, 0], [7, 1], [7, 2], [7, 3], [7, 4], [7, 5], [7, 6], [7, 7], [7, 8]],
+    [[8, 0], [8, 1], [8, 2], [8, 3], [8, 4], [8, 5], [8, 6], [8, 7], [8, 8]],
+    [[0, 0], [1, 0], [2, 0], [3, 0], [4, 0], [5, 0], [6, 0], [7, 0], [8, 0]],
+    [[0, 1], [1, 1], [2, 1], [3, 1], [4, 1], [5, 1], [6, 1], [7, 1], [8, 1]],
+    [[0, 2], [1, 2], [2, 2], [3, 2], [4, 2], [5, 2], [6, 2], [7, 2], [8, 2]],
+    [[0, 3], [1, 3], [2, 3], [3, 3], [4, 3], [5, 3], [6, 3], [7, 3], [8, 3]],
+    [[0, 4], [1, 4], [2, 4], [3, 4], [4, 4], [5, 4], [6, 4], [7, 4], [8, 4]],
+    [[0, 5], [1, 5], [2, 5], [3, 5], [4, 5], [5, 5], [6, 5], [7, 5], [8, 5]],
+    [[0, 6], [1, 6], [2, 6], [3, 6], [4, 6], [5, 6], [6, 6], [7, 6], [8, 6]],
+    [[0, 7], [1, 7], [2, 7], [3, 7], [4, 7], [5, 7], [6, 7], [7, 7], [8, 7]],
+    [[0, 8], [1, 8], [2, 8], [3, 8], [4, 8], [5, 8], [6, 8], [7, 8], [8, 8]],
+    [[0, 0], [0, 1], [0, 2], [1, 0], [1, 1], [1, 2], [2, 0], [2, 1], [2, 2]],
+    [[0, 3], [0, 4], [0, 5], [1, 3], [1, 4], [1, 5], [2, 3], [2, 4], [2, 5]],
+    [[0, 6], [0, 7], [0, 8], [1, 6], [1, 7], [1, 8], [2, 6], [2, 7], [2, 8]],
+    [[3, 0], [3, 1], [3, 2], [4, 0], [4, 1], [4, 2], [5, 0], [5, 1], [5, 2]],
+    [[3, 3], [3, 4], [3, 5], [4, 3], [4, 4], [4, 5], [5, 3], [5, 4], [5, 5]],
+    [[3, 6], [3, 7], [3, 8], [4, 6], [4, 7], [4, 8], [5, 6], [5, 7], [5, 8]],
+    [[6, 0], [6, 1], [6, 2], [7, 0], [7, 1], [7, 2], [8, 0], [8, 1], [8, 2]],
+    [[6, 3], [6, 4], [6, 5], [7, 3], [7, 4], [7, 5], [8, 3], [8, 4], [8, 5]],
+    [[6, 6], [6, 7], [6, 8], [7, 6], [7, 7], [7, 8], [8, 6], [8, 7], [8, 8]]
+  ] 
 
   def initialize options = {}
     defaults = {
-      size: 9,
       givens: 11,
     }
     config = defaults.merge(options)
 
-    @size = config[:size]
     @givens = config[:givens]
     @array = config[:array] || clear
   end
@@ -28,48 +62,12 @@ class Sudoku::Grid
   end
   
   def all_empty 
-    all_ords.select { |ord| self[ord].nil? }
-  end
-
-  def all_ords
-    (0...size).map do |x|
-      (0...size).map do |y|
-        [x, y]
-      end
-    end.flatten(1)
-  end
-
-  def all_sets 
-    cols = (0...size).to_a.map do |x|
-      (0...size).to_a.map do |y|
-        [x, y]
-      end
-    end
-
-    rows = (0...size).to_a.map do |y|
-      (0...size).to_a.map do |x|
-        [x, y]
-      end
-    end
-
-    small_grid = (0..2).to_a.map do |x|
-      (0..2).to_a.map do |y|
-        [x, y]
-      end
-    end.flatten(1)
-
-    grids = small_grid.map do |x_offset, y_offset|
-      small_grid.map do |x, y|
-        [x + x_offset * 3, y + y_offset * 3]
-      end
-    end
-
-    rows + cols + grids
+    ALL_ORDS.select { |ord| self[ord].nil? }
   end
 
   def clear 
-    Array.new(size) do
-      Array.new(size)
+    self.array = Array.new(9) do
+      Array.new(9)
     end
   end
 
@@ -87,7 +85,10 @@ class Sudoku::Grid
     all_empty.empty?
   end
 
-  def fill
+  def first_empty
+    ALL_ORDS.find do |ord|
+      self[ord].nil?
+    end 
   end
 
   def no_dups? set
@@ -103,9 +104,8 @@ class Sudoku::Grid
   end
 
   def random_set count, &block
-    ords = all_ords
-    set = all_ords.sample(count)
-    values = (1..(size * size)).to_a.map { |v| (v % size) + 1 }.sample(count)
+    set = ALL_ORDS.sample(count)
+    values = (1..81).to_a.map { |v| (v % 9) + 1 }.sample(count)
 
     count.times do |n|
       block.call(values[n], set[n])
@@ -117,6 +117,10 @@ class Sudoku::Grid
   def seed
     random_set(givens) do |n, ord|
       self[ord] = n
+    end
+    unless valid?
+      clear
+      seed
     end
   end
 
@@ -133,7 +137,7 @@ class Sudoku::Grid
   end
 
   def valid?
-    all_sets.all? do |set|
+    ALL_SETS.all? do |set|
       no_dups? set
     end
   end

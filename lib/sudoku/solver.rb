@@ -13,7 +13,7 @@ class Sudoku::Solver
   end
 
   def solve
-    cell = grid.all_empty.first
+    cell = grid.first_empty
 
     (1..9).to_a.each do |n|
       grid[cell] = n
