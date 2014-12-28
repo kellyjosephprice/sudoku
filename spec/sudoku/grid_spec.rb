@@ -36,22 +36,45 @@ end
 
 def valid? grid
   all_sets.all? do |set|
-    complete? grid, set
+    no_dups? grid, set
   end
 end
 
-def complete? grid, ords
-  nums = (0...9).to_a
+def no_dups? grid, set
+  count = Hash.new { 0 }
 
-  values = ords.map do |ord|
-    grid.to_a[ord[0]][ord[1]]
+  set.reject do |ord|
+    grid[ord].nil?
+  end.each do |ord|
+    count[grid[ord]] += 1
   end
 
-  values.sort == nums
+  count.values.all? { |value| value <= 1 }
 end
 
 describe Sudoku::Grid do
   let(:grid) { Sudoku::Grid.new }
+  
+  let(:valid) do
+    nums = (1..9).to_a
+    [
+      nums,
+      nums.rotate(3),
+      nums.rotate(6),
+      nums.rotate(1),
+      nums.rotate(4),
+      nums.rotate(7),
+      nums.rotate(2),
+      nums.rotate(5),
+      nums.rotate(8),
+    ]
+  end
+
+  let(:invalid) do
+    (1..9).map do
+      (1..9).map { |n| n }
+    end
+  end
 
   it "should create a 9x9 grid" do
     assert_equal 9, grid.array.size 
@@ -67,13 +90,29 @@ describe Sudoku::Grid do
     end
   end
 
-  describe "#fill" do
-    before do
-      grid.fill
+  describe "#valid?" do
+    it "should detect a valid puzzle" do
+      grid.array = valid
+      assert_equal true, grid.valid?
     end
 
-    it "should be a valid puzzle" do
-      assert_equal true, valid?(grid)
+    it "should detect an invalid puzzle" do
+      grid.array = invalid
+      assert_equal false, grid.valid?
+    end
+  end
+
+  describe "#==" do
+    let(:first)     { Sudoku::Grid.new(array: valid) }    
+    let(:same)      { Sudoku::Grid.new(array: valid) }    
+    let(:different) { Sudoku::Grid.new(array: invalid) }
+
+    it "should detect similar grids" do
+      assert_equal true, first == same
+    end
+
+    it "should detect dissimilar grids" do
+      assert_equal false, first == different
     end
   end
 end
