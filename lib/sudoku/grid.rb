@@ -60,10 +60,6 @@ class Sudoku::Grid
   def == other
     self.array == other.array
   end
-  
-  def all_empty 
-    ALL_ORDS.select { |ord| self[ord].nil? }
-  end
 
   def clear 
     self.array = Array.new(9) do
@@ -82,7 +78,7 @@ class Sudoku::Grid
   end
 
   def complete?
-    all_empty.empty?
+    first_empty.nil?
   end
 
   def first_empty
@@ -92,15 +88,16 @@ class Sudoku::Grid
   end
 
   def no_dups? set
-    count = Hash.new { 0 }
+    count = {}
 
-    set.reject do |ord|
-      self[ord].nil?
-    end.each do |ord|
-      count[self[ord]] += 1
+    set.each do |ord|
+      unless self[ord].nil?
+        return false if count[self[ord]]
+        count[self[ord]] = 1 
+      end
     end
 
-    count.values.all? { |value| value <= 1 }
+    true  
   end
 
   def random_set count, &block
