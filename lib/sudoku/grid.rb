@@ -1,7 +1,7 @@
 require_relative '../sudoku'
 
 class Sudoku::Grid
-  attr_accessor :givens, :array
+  attr_accessor :array
 
   ALL_ORDS = (0...9).map do |x|
     (0...9).map do |y|
@@ -9,7 +9,7 @@ class Sudoku::Grid
     end
   end.flatten(1)
 
-  ALL_SETS = [
+  COLS = [
     [[0, 0], [0, 1], [0, 2], [0, 3], [0, 4], [0, 5], [0, 6], [0, 7], [0, 8]],
     [[1, 0], [1, 1], [1, 2], [1, 3], [1, 4], [1, 5], [1, 6], [1, 7], [1, 8]],
     [[2, 0], [2, 1], [2, 2], [2, 3], [2, 4], [2, 5], [2, 6], [2, 7], [2, 8]],
@@ -19,6 +19,9 @@ class Sudoku::Grid
     [[6, 0], [6, 1], [6, 2], [6, 3], [6, 4], [6, 5], [6, 6], [6, 7], [6, 8]],
     [[7, 0], [7, 1], [7, 2], [7, 3], [7, 4], [7, 5], [7, 6], [7, 7], [7, 8]],
     [[8, 0], [8, 1], [8, 2], [8, 3], [8, 4], [8, 5], [8, 6], [8, 7], [8, 8]],
+  ]
+
+  ROWS = [
     [[0, 0], [1, 0], [2, 0], [3, 0], [4, 0], [5, 0], [6, 0], [7, 0], [8, 0]],
     [[0, 1], [1, 1], [2, 1], [3, 1], [4, 1], [5, 1], [6, 1], [7, 1], [8, 1]],
     [[0, 2], [1, 2], [2, 2], [3, 2], [4, 2], [5, 2], [6, 2], [7, 2], [8, 2]],
@@ -28,6 +31,9 @@ class Sudoku::Grid
     [[0, 6], [1, 6], [2, 6], [3, 6], [4, 6], [5, 6], [6, 6], [7, 6], [8, 6]],
     [[0, 7], [1, 7], [2, 7], [3, 7], [4, 7], [5, 7], [6, 7], [7, 7], [8, 7]],
     [[0, 8], [1, 8], [2, 8], [3, 8], [4, 8], [5, 8], [6, 8], [7, 8], [8, 8]],
+  ]
+
+  GRIDS = [
     [[0, 0], [0, 1], [0, 2], [1, 0], [1, 1], [1, 2], [2, 0], [2, 1], [2, 2]],
     [[0, 3], [0, 4], [0, 5], [1, 3], [1, 4], [1, 5], [2, 3], [2, 4], [2, 5]],
     [[0, 6], [0, 7], [0, 8], [1, 6], [1, 7], [1, 8], [2, 6], [2, 7], [2, 8]],
@@ -39,13 +45,13 @@ class Sudoku::Grid
     [[6, 6], [6, 7], [6, 8], [7, 6], [7, 7], [7, 8], [8, 6], [8, 7], [8, 8]]
   ] 
 
+  ALL_SETS = ROWS + COLS + GRIDS
+
   def initialize options = {}
     defaults = {
-      givens: 11,
     }
     config = defaults.merge(options)
 
-    @givens = config[:givens]
     @array = config[:array] || clear
   end
 
@@ -88,7 +94,7 @@ class Sudoku::Grid
   end
 
   def no_dups? set
-    count = {}
+    count = []
 
     set.each do |ord|
       unless self[ord].nil?
@@ -98,27 +104,6 @@ class Sudoku::Grid
     end
 
     true  
-  end
-
-  def random_set count, &block
-    set = ALL_ORDS.sample(count)
-    values = (1..81).to_a.map { |v| (v % 9) + 1 }.sample(count)
-
-    count.times do |n|
-      block.call(values[n], set[n])
-    end
-
-    set.first(count)
-  end
-
-  def seed
-    random_set(givens) do |n, ord|
-      self[ord] = n
-    end
-    unless valid?
-      clear
-      seed
-    end
   end
 
   def to_a
@@ -135,6 +120,16 @@ class Sudoku::Grid
 
   def valid?
     ALL_SETS.all? do |set|
+      no_dups? set
+    end
+  end
+
+  def valid_square? ord
+    row  = ROWS[ord[1]]
+    col  = COLS[ord[0]]
+    grid = GRIDS[(ord[0] / 3 * 3) + (ord[1] % 3)]
+
+    [ row, col, grid ].all? do |set|
       no_dups? set
     end
   end

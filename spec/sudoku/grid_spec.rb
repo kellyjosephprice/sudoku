@@ -3,61 +3,12 @@ require_relative '../../lib/sudoku/grid'
 
 require 'pry'
 
-def all_sets 
-  cols = (0...9).to_a.map do |x|
-    (0...9).to_a.map do |y|
-      [x, y]
-    end
-  end
-
-  rows = (0...9).to_a.map do |y|
-    (0...9).to_a.map do |x|
-      [x, y]
-    end
-  end
-
-  small_grid = (0..2).to_a.map do |x|
-    (0..2).to_a.map do |y|
-      [x, y]
-    end
-  end.flatten(1)
-
-  grids = small_grid.map do |x_offset, y_offset|
-    x_offset *= 3
-    y_offset *= 3
-
-    small_grid.map do |x, y|
-      [x + x_offset, y + y_offset]
-    end
-  end
-
-  rows + cols + grids
-end
-
 def dup_array array
   array.map do |row|
     row.map do |value|
       value
     end
   end
-end
-
-def valid? grid
-  all_sets.all? do |set|
-    no_dups? grid, set
-  end
-end
-
-def no_dups? grid, set
-  count = Hash.new { 0 }
-
-  set.reject do |ord|
-    grid[ord].nil?
-  end.each do |ord|
-    count[grid[ord]] += 1
-  end
-
-  count.values.all? { |value| value <= 1 }
 end
 
 describe Sudoku::Grid do
@@ -89,21 +40,6 @@ describe Sudoku::Grid do
     assert_equal 9, grid.array[0].size 
   end
 
-  describe "#seed" do
-    before :each do 
-      grid.seed
-    end
-
-    it "should seed the grid" do
-      seeds = grid.to_a.flatten.reject { |n| n.nil? }
-      assert_equal 11, seeds.count
-    end
-
-    it "should be a valid grid" do
-      assert_equal true, valid?(grid)
-    end
-  end
-
   describe "#valid?" do
     it "should detect a valid puzzle" do
       grid.array = valid
@@ -113,6 +49,22 @@ describe Sudoku::Grid do
     it "should detect an invalid puzzle" do
       grid.array = invalid
       assert_equal false, grid.valid?
+    end
+  end
+
+  describe "#valid_square?" do
+    let(:bad) do
+      tmp = dup_array valid
+      tmp[0][0] = 2
+      Sudoku::Grid.new array: tmp
+    end
+
+    it "should detect that a square is valid" do
+      assert_equal true, bad.valid_square?([8, 8])
+    end
+
+    it "should detect an invalid square" do
+      assert_equal false, bad.valid_square?([0, 0])
     end
   end
 
