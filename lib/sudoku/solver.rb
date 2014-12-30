@@ -14,6 +14,7 @@ class Sudoku::Solver
   end
 
   def solve
+    @solutions = []
     @grid = @grid.dup
 
     begin
@@ -40,6 +41,7 @@ class Sudoku::Solver
 
   def dfs
     cell = grid.first_empty
+    return unless cell
 
     (1..9).to_a.shuffle.each do |n|
       grid[cell] = n

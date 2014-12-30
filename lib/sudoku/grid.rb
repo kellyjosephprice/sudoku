@@ -55,22 +55,32 @@ class Sudoku::Grid
     @array = config[:array] || clear
   end
 
-  def [] ords
-    @array[ords[0]][ords[1]]
+  def [] ord
+    @array[ord[0]][ord[1]]
   end
 
-  def []= ords, value
-    @array[ords[0]][ords[1]] = value
+  def []= ord, value
+    @array[ord[0]][ord[1]] = value
   end
 
   def == other
     self.array == other.array
   end
 
+  def all_empty
+    ALL_ORDS.select do |ord|
+      @array[ord[0]][ord[1]]
+    end
+  end
+
   def clear 
     self.array = Array.new(9) do
       Array.new(9)
     end
+  end
+
+  def complete?
+    first_empty.nil?
   end
 
   def dup
@@ -83,13 +93,29 @@ class Sudoku::Grid
     Sudoku::Grid.new array: array_dup
   end
 
-  def complete?
-    first_empty.nil?
+  def effected_row ord
+    ROWS[ord[1]]
+  end
+
+  def effected_col ord
+    COLS[ord[0]]
+  end
+
+  def effected_grid ord
+    GRIDS[(ord[0] / 3 * 3) + (ord[1] % 3)]
+  end
+
+  def effected_sets ord
+    row  = ROWS[ord[1]]
+    col  = COLS[ord[0]]
+    grid = GRIDS[(ord[0] / 3 * 3) + (ord[1] % 3)]
+
+    [ row, col, grid ]
   end
 
   def first_empty
     ALL_ORDS.find do |ord|
-      self[ord].nil?
+      array[ord[0]][ord[1]].nil?
     end 
   end
 
@@ -97,9 +123,10 @@ class Sudoku::Grid
     count = []
 
     set.each do |ord|
-      unless self[ord].nil?
-        return false if count[self[ord]]
-        count[self[ord]] = 1 
+      value = array[ord[0]][ord[1]]
+      unless value.nil?
+        return false if count[value]
+        count[value] = 1
       end
     end
 
@@ -125,12 +152,9 @@ class Sudoku::Grid
   end
 
   def valid_square? ord
-    row  = ROWS[ord[1]]
-    col  = COLS[ord[0]]
-    grid = GRIDS[(ord[0] / 3 * 3) + (ord[1] % 3)]
-
-    [ row, col, grid ].all? do |set|
+    effected_sets(ord).all? do |set|
       no_dups? set
     end
   end
+
 end

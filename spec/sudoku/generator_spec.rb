@@ -60,7 +60,7 @@ describe Sudoku::Generator do
   let(:generator) { Sudoku::Generator.new }
 
   describe "#seed" do
-    let(:grid) { generator.seed }
+    let(:grid) { generator.seed.grid }
 
     it "should seed the grid" do
       seeds = grid.to_a.flatten.reject { |n| n.nil? }
@@ -73,7 +73,7 @@ describe Sudoku::Generator do
   end
 
   describe "#fill" do
-    let(:grid) { generator.fill }
+    let(:grid) { generator.fill.grid }
 
     it "should fill a grid" do
       assert_equal true, complete?(grid)
@@ -81,6 +81,30 @@ describe Sudoku::Generator do
 
     it "should be a valid grid" do
       assert_equal true, valid?(grid)
+    end
+  end
+
+  describe "#dig" do
+    let(:grid) { generator.fill.dig.grid }
+    let(:solver) { Sudoku::Solver.new grid: grid }
+
+    it "should remove squares from a grid" do
+      assert_equal false, complete?(grid)
+    end
+
+    it "should create a valid puzzle" do
+      assert_equal true, valid?(grid)
+    end
+
+    it "should be unique" do
+      unique = true
+      begin
+        solver.solve
+      rescue NonUniqueSolutionError
+        unique = false
+      end
+
+      assert_equal true, unique
     end
   end
 

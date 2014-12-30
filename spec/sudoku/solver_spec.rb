@@ -41,7 +41,7 @@ describe Sudoku::Solver do
       solver.solve
 
       assert solver.unique?, "not unique"
-      assert solver.solutions.first == finished, "wrong solution"
+      assert solver.solution == finished, "wrong solution"
     end
   end
 
