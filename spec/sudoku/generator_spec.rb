@@ -35,7 +35,9 @@ def all_sets
 end
 
 def complete? grid
-  grid.array.flatten.count == 81
+  grid.array.flatten.reject do |value|
+    value.nil?
+  end.count == 81
 end
 
 def valid? grid
@@ -58,19 +60,6 @@ end
 
 describe Sudoku::Generator do
   let(:generator) { Sudoku::Generator.new }
-
-  describe "#seed" do
-    let(:grid) { generator.seed.grid }
-
-    it "should seed the grid" do
-      seeds = grid.to_a.flatten.reject { |n| n.nil? }
-      assert_equal 5, seeds.count
-    end
-
-    it "should be a valid grid" do
-      assert_equal true, valid?(grid)
-    end
-  end
 
   describe "#fill" do
     let(:grid) { generator.fill.grid }
@@ -106,6 +95,8 @@ describe Sudoku::Generator do
 
       assert_equal true, unique
     end
+
+    
   end
 
 end

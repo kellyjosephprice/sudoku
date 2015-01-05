@@ -4,8 +4,6 @@ require_relative '../sudoku/grid'
 require_relative 'grid'
 
 class Sudoku::Generator
-  attr_accessor :seeds, :difficulty, :grid
-
   DIFFICULTY = [
     {
       givens: 50,
@@ -44,33 +42,45 @@ class Sudoku::Generator
     normal: Sudoku::Grid::ALL_ORDS,
   }
 
+  attr_accessor :difficulty, :grid
+
   def initialize options = {}
     defaults = {
-      seeds: 5,
-      difficulty: 4,
+      difficulty: 1,
     }
     config = defaults.merge(options)
 
-    @seeds = config[:seeds]
     @difficulty = config[:difficulty]
-    
-    @solver = Sudoku::Solver.new 
+  end
+
+  def bounds 
+    DIFFICULTY[difficulty][:bounds]
+  end
+
+  def givens 
+    DIFFICULTY[difficulty][:givens]
+  end
+  
+  def search 
+    DIFFICULTY[difficulty][:search]
+  end
+
+  def sequence 
+    SEQUENCE[DIFFICULTY[difficulty][:sequence]]
   end
 
   def dig
-    diggable = SEQUENCE[DIFFICULTY[difficulty][:sequence]]
-    @solver.grid = grid
+    diggable = sequence.dup
+    filled = 81
 
-    until diggable.empty?
+    until diggable.empty? || filled == givens
       ord = diggable.shift
       old = grid[ord]
       grid[ord] = nil
 
-      if within_bounds? ord
-        unless unique? ord, old
-          grid[ord] = old
-        end
-      else
+      if within_bounds?(ord) && unique?
+        filled -= 1
+      else 
         grid[ord] = old
       end
     end
@@ -79,13 +89,16 @@ class Sudoku::Generator
   end
 
   def fill
+    solver = nil
+
     loop do
-      @solver.grid = grid || Sudoku::Grid.new
-      @solver.solve
-      break unless @solver.unsolvable?
+      solver = Sudoku::Solver.new
+      solver.solve
+
+      break unless solver.unsolvable?
     end
     
-    self.grid = @solver.solution
+    self.grid = solver.solution
     self
   end
   
@@ -99,45 +112,16 @@ class Sudoku::Generator
     set.first(count)
   end
 
-  def seed 
-    self.grid = Sudoku::Grid.new
-
-    loop do
-      grid.clear
-
-      values = (1..81).to_a.map { |v| (v % 9) + 1 }.sample(seeds)
-      random_set(seeds) do |n, ord|
-        grid[ord] = values[n]
-      end
-
-      break if grid.valid?
-    end
-
-    self
-  end
-
-  def unique? ord, value
-    nums = (1..9).to_a
-    nums.slice!(value - 1)
-
-    nums.all? do |n|
-      begin
-        grid[ord] = n
-        @solver.solve
-      rescue NonUniqueSolutionError
-        grid[ord] = nil
-        return false
-      end
-
-      grid[ord] = nil
-      @solver.unsolvable?
-    end
+  def unique? 
+    solver = Sudoku::Solver.new grid: grid
+    solver.solve
+    solver.unique?
   end
 
   def within_bounds? ord
-    return false if grid.all_empty.count < DIFFICULTY[difficulty][:givens]
+    return false if grid.all_empty.count < DIFFICULTY[self.difficulty][:givens]
 
-    bounds = DIFFICULTY[difficulty][:bounds]
+    bounds = DIFFICULTY[self.difficulty][:bounds]
     return true if 0 == bounds
     
     row = grid.effected_row(ord)

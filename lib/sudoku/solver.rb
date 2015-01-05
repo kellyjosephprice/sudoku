@@ -9,7 +9,7 @@ class Sudoku::Solver
     defaults = {}
     config = defaults.merge(options)
 
-    @grid = config[:grid]
+    @grid = config[:grid] || Sudoku::Grid.new
     @solutions = []
   end
 
@@ -22,7 +22,7 @@ class Sudoku::Solver
     rescue NonUniqueSolutionError
     end 
 
-    solutions.first
+    solution
   end
 
   def solution 
@@ -30,7 +30,7 @@ class Sudoku::Solver
   end
 
   def unique?
-    solutions.count <= 1
+    solutions.count == 1
   end
 
   def unsolvable?
@@ -45,15 +45,16 @@ class Sudoku::Solver
 
     (1..9).to_a.shuffle.each do |n|
       grid[cell] = n
+
       next unless grid.valid_square?(cell)
 
       if grid.complete?
-        raise NonUniqueSolutionError unless unique?
         solutions << grid.dup 
+        raise NonUniqueSolutionError unless unique?
         break
-      else
-        dfs
       end
+
+      dfs
     end
 
     grid[cell] = nil

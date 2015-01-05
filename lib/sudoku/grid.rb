@@ -115,7 +115,7 @@ class Sudoku::Grid
 
   def first_empty
     ALL_ORDS.find do |ord|
-      array[ord[0]][ord[1]].nil?
+      @array[ord[0]][ord[1]].nil?
     end 
   end
 
@@ -143,6 +143,14 @@ class Sudoku::Grid
         value.nil? ? "." : value
       end.join(" ")
     end.join("\n").concat("\n")
+  end
+
+  def self.from_s string
+    array = string.split("\n").map do |row|
+      row.split("\s")
+    end
+
+    Sudoku::Grid.new array: array
   end
 
   def valid?
