@@ -34,10 +34,14 @@ def all_sets
   rows + cols + grids
 end
 
-def complete? grid
+def count grid
   grid.array.flatten.reject do |value|
     value.nil?
-  end.count == 81
+  end.count
+end
+
+def complete? grid
+  count(grid) == 81
 end
 
 def valid? grid
@@ -96,6 +100,9 @@ describe Sudoku::Generator do
       assert_equal true, unique
     end
 
+    it "should contain a count greater than or equal to givens" do
+      assert_operator generator.givens, :<=, count(grid)
+    end
     
   end
 
