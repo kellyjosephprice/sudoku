@@ -79,7 +79,7 @@ class Sudoku::Solver
   private
   
   def dfs
-    cell = (35 > grid.all_empty.count) ? minimum_remaining : grid.first_empty
+    cell = (32 > grid.all_empty.count) ? minimum_remaining : grid.first_empty
     return unless cell
 
     (1..9).select do |n|

@@ -71,7 +71,7 @@ class Sudoku::Generator
   end
 
   def dig
-    solver = Sudoku::Solver.new grid: grid
+    solver.grid = grid
     diggable = sequence.dup
     filled = 81
 
@@ -82,7 +82,6 @@ class Sudoku::Generator
 
       if within_bounds?(ord) && unique?
         filled -= 1
-        puts "#{filled - givens} remaining"
       else 
         grid[ord] = old
       end
