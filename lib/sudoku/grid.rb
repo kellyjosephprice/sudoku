@@ -3,13 +3,9 @@ require_relative '../sudoku'
 class Sudoku::Grid
   attr_accessor :array
 
-  ALL_ORDS = (0...9).map do |x|
-    (0...9).map do |y|
-      [x, y]
-    end
-  end.flatten(1)
+  ALL_ORDS = (0...9).to_a.product((0...9).to_a).freeze
 
-  COLS = [
+  ROWS = [
     [[0, 0], [0, 1], [0, 2], [0, 3], [0, 4], [0, 5], [0, 6], [0, 7], [0, 8]],
     [[1, 0], [1, 1], [1, 2], [1, 3], [1, 4], [1, 5], [1, 6], [1, 7], [1, 8]],
     [[2, 0], [2, 1], [2, 2], [2, 3], [2, 4], [2, 5], [2, 6], [2, 7], [2, 8]],
@@ -19,9 +15,9 @@ class Sudoku::Grid
     [[6, 0], [6, 1], [6, 2], [6, 3], [6, 4], [6, 5], [6, 6], [6, 7], [6, 8]],
     [[7, 0], [7, 1], [7, 2], [7, 3], [7, 4], [7, 5], [7, 6], [7, 7], [7, 8]],
     [[8, 0], [8, 1], [8, 2], [8, 3], [8, 4], [8, 5], [8, 6], [8, 7], [8, 8]],
-  ]
+  ].freeze
 
-  ROWS = [
+  COLS = [
     [[0, 0], [1, 0], [2, 0], [3, 0], [4, 0], [5, 0], [6, 0], [7, 0], [8, 0]],
     [[0, 1], [1, 1], [2, 1], [3, 1], [4, 1], [5, 1], [6, 1], [7, 1], [8, 1]],
     [[0, 2], [1, 2], [2, 2], [3, 2], [4, 2], [5, 2], [6, 2], [7, 2], [8, 2]],
@@ -31,7 +27,7 @@ class Sudoku::Grid
     [[0, 6], [1, 6], [2, 6], [3, 6], [4, 6], [5, 6], [6, 6], [7, 6], [8, 6]],
     [[0, 7], [1, 7], [2, 7], [3, 7], [4, 7], [5, 7], [6, 7], [7, 7], [8, 7]],
     [[0, 8], [1, 8], [2, 8], [3, 8], [4, 8], [5, 8], [6, 8], [7, 8], [8, 8]],
-  ]
+  ].freeze
 
   GRIDS = [
     [[0, 0], [0, 1], [0, 2], [1, 0], [1, 1], [1, 2], [2, 0], [2, 1], [2, 2]],
@@ -43,9 +39,37 @@ class Sudoku::Grid
     [[6, 0], [6, 1], [6, 2], [7, 0], [7, 1], [7, 2], [8, 0], [8, 1], [8, 2]],
     [[6, 3], [6, 4], [6, 5], [7, 3], [7, 4], [7, 5], [8, 3], [8, 4], [8, 5]],
     [[6, 6], [6, 7], [6, 8], [7, 6], [7, 7], [7, 8], [8, 6], [8, 7], [8, 8]]
-  ] 
+  ].freeze
 
-  ALL_SETS = ROWS + COLS + GRIDS
+  ALL_SETS = (ROWS + COLS + GRIDS).freeze
+
+  def self.effected_row ord
+    ROWS[ord[0]]
+  end
+
+  def self.effected_col ord
+    COLS[ord[1]]
+  end
+
+  def self.effected_grid ord
+    GRIDS[ord[0] / 3 * 3 + ord[1] / 3]
+  end
+
+  def self.effected_sets ord
+    row  = ROWS[ord[0]]
+    col  = COLS[ord[1]]
+    grid = GRIDS[(ord[0] / 3 * 3) + (ord[1] / 3)]
+
+    [ row, col, grid ]
+  end
+
+  def self.from_flat_array array
+    Sudoku::Grid.new.tap do |grid|
+      array.each do |ord, value|
+        grid[ord] = value
+      end
+    end
+  end
 
   def initialize options = {}
     defaults = {
@@ -69,6 +93,12 @@ class Sudoku::Grid
 
   def all_empty
     ALL_ORDS.select do |ord|
+      @array[ord[0]][ord[1]].nil?
+    end
+  end
+
+  def all_not_empty
+    ALL_ORDS.select do |ord|
       @array[ord[0]][ord[1]]
     end
   end
@@ -83,6 +113,14 @@ class Sudoku::Grid
     first_empty.nil?
   end
 
+  def effected_sets ord, &block
+    Sudoku::Grid.effected_sets(ord).each do |set|
+      set.each do |ord|
+        block.call(ord)
+      end
+    end
+  end
+
   def dup
     array_dup = array.map do |row|
       row.map do |value|
@@ -91,26 +129,6 @@ class Sudoku::Grid
     end
 
     Sudoku::Grid.new array: array_dup
-  end
-
-  def effected_row ord
-    ROWS[ord[1]]
-  end
-
-  def effected_col ord
-    COLS[ord[0]]
-  end
-
-  def effected_grid ord
-    GRIDS[(ord[0] / 3 * 3) + (ord[1] % 3)]
-  end
-
-  def effected_sets ord
-    row  = ROWS[ord[1]]
-    col  = COLS[ord[0]]
-    grid = GRIDS[(ord[0] / 3 * 3) + (ord[1] % 3)]
-
-    [ row, col, grid ]
   end
 
   def first_empty
@@ -160,7 +178,7 @@ class Sudoku::Grid
   end
 
   def valid_square? ord
-    effected_sets(ord).all? do |set|
+    Sudoku::Grid.effected_sets(ord).all? do |set|
       no_dups? set
     end
   end

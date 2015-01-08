@@ -42,7 +42,7 @@ class Sudoku::Generator
     normal: Sudoku::Grid::ALL_ORDS,
   }
 
-  attr_accessor :difficulty, :grid
+  attr_accessor :difficulty, :grid, :solver
 
   def initialize options = {}
     defaults = {
@@ -51,6 +51,7 @@ class Sudoku::Generator
     config = defaults.merge(options)
 
     @difficulty = config[:difficulty]
+    @solver = Sudoku::Solver.new
   end
 
   def bounds 
@@ -70,6 +71,7 @@ class Sudoku::Generator
   end
 
   def dig
+    solver = Sudoku::Solver.new grid: grid
     diggable = sequence.dup
     filled = 81
 
@@ -80,6 +82,7 @@ class Sudoku::Generator
 
       if within_bounds?(ord) && unique?
         filled -= 1
+        puts "#{filled - givens} remaining"
       else 
         grid[ord] = old
       end
@@ -89,10 +92,8 @@ class Sudoku::Generator
   end
 
   def fill
-    solver = nil
-
     loop do
-      solver = Sudoku::Solver.new
+      solver.grid = Sudoku::Grid.new
       solver.solve
 
       break unless solver.unsolvable?
@@ -113,19 +114,17 @@ class Sudoku::Generator
   end
 
   def unique? 
-    solver = Sudoku::Solver.new grid: grid
     solver.solve
     solver.unique?
   end
 
   def within_bounds? ord
-    return false if grid.all_empty.count < DIFFICULTY[self.difficulty][:givens]
+    return false if grid.all_not_empty.count < givens
 
-    bounds = DIFFICULTY[self.difficulty][:bounds]
     return true if 0 == bounds
     
-    row = grid.effected_row(ord)
-    col = grid.effected_col(ord)
+    row = Sudoku::Grid.effected_row(ord)
+    col = Sudoku::Grid.effected_col(ord)
 
     [row, col].each do |set|
       actual = set.reject do |ord|
