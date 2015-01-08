@@ -14,43 +14,11 @@ class Sudoku::Solver
 
     @grid = config[:grid] || Sudoku::Grid.new
     @solutions = []
-
-    reset_counts
   end
 
   def grid= new_grid
     @grid = new_grid
     @solutions = []
-    reset_counts
-  end
-
-  def minimum_remaining
-    grid.all_empty.max_by do |ord|
-      @counts[ord]
-    end
-  end
-
-  def reset_counts
-    @counts = Hash.new(0)
-    grid.all_not_empty.each do |ord|
-      grid.effected_sets(ord) do |other|
-        @counts[other] += 1
-      end
-    end
-  end
-
-  def set ord, value
-    if grid[ord].nil? && value
-      grid.effected_sets(ord) do |other|
-        @counts[other] += 1
-      end
-    elsif value.nil? && grid[ord]
-      grid.effected_sets(ord) do |other|
-        @counts[other] -= 1
-      end
-    end
-
-    grid[ord] = value
   end
 
   def solve
@@ -80,14 +48,14 @@ class Sudoku::Solver
   private
   
   def dfs
-    cell = (32 > grid.all_empty.count) ? minimum_remaining : grid.first_empty
-    return unless cell
+    cell = grid.minimum_remaining
+    return if cell.nil?
 
     (1..9).select do |n|
       grid[cell] = n
-      grid.valid_square?(cell)
+      grid.valid_square? cell
     end.shuffle.each do |n|
-      set cell, n
+      grid[cell] = n
 
       if grid.complete?
         solutions << grid.dup 
@@ -98,7 +66,7 @@ class Sudoku::Solver
       dfs
     end
 
-    set cell, nil
+    grid[cell] = nil
   end
 
 end

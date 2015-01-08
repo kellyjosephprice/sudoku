@@ -78,13 +78,12 @@ class Sudoku::Generator
     until diggable.empty? || filled == givens
       ord = diggable.shift
       old = grid[ord]
-      solver.set ord, nil
+      grid[ord] = nil
 
       if within_bounds?(ord) && unique?
         filled -= 1
-        p solver.counts
       else 
-        solver.set ord, old
+        grid[ord] = old
       end
     end
 
@@ -101,16 +100,6 @@ class Sudoku::Generator
     
     self.grid = solver.solution
     self
-  end
-  
-  def random_set count, &block
-    set = Sudoku::Grid::ALL_ORDS.sample(count)
-
-    count.times do |n|
-      block.call(n, set[n])
-    end
-
-    set.first(count)
   end
 
   def unique? 

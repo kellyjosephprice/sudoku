@@ -17,21 +17,6 @@ describe Sudoku::Solver do
       [nil, nil, nil, nil,   8, nil, nil,   7,   9],
     ]
   end
-  
-  let(:seeds_mvr) do
-    [
-      [  5,   3, nil,   6,   7,   8,   9,   1,   2],
-      [  6, nil, nil,   1,   9,   5, nil, nil, nil],
-      [  1,   9,   8, nil, nil, nil, nil,   6, nil],
-      [  8, nil,   9, nil,   6, nil, nil, nil,   3],
-      [  4, nil,   6,   8, nil,   3, nil, nil,   1],
-      [  7, nil,   3, nil,   2, nil, nil, nil,   6],
-      [nil,   6,   1, nil, nil, nil,   2,   8, nil],
-      [nil, nil,   7,   4,   1,   9, nil, nil,   5],
-      [nil, nil,   5, nil,   8, nil, nil,   7,   9],
-    ]
-  end
-  
   let(:complete) do
     [
       [5, 3, 4, 6, 7, 8, 9, 1, 2],
@@ -45,8 +30,6 @@ describe Sudoku::Solver do
       [3, 4, 5, 2, 8, 6, 1, 7, 9],
     ]
   end
-
-
 
   describe "#solve" do
     let(:seeded)   { Sudoku::Grid.new(array: seeds) }
@@ -68,16 +51,6 @@ describe Sudoku::Solver do
       solver2.solve
 
       assert_operator solver1.grid, :!=, solver2.grid
-    end
-  end
-
-  describe "#minimum_remaining" do
-    let(:seeded) { Sudoku::Grid.new(array: seeds_mvr) }
-
-    it "should return a list of empty cells sorted by their constraints" do
-      solver = Sudoku::Solver.new grid: seeded
-
-      assert_equal [0,2], solver.minimum_remaining
     end
   end
 

@@ -137,6 +137,12 @@ class Sudoku::Grid
     end 
   end
 
+  def minimum_remaining
+    all_empty.max_by do |ord|
+      Sudoku::Grid.effected_sets(ord).reject { |o| o.nil? }.count
+    end
+  end
+
   def no_dups? set
     count = []
 
