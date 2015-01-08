@@ -42,14 +42,16 @@ class Sudoku::Generator
     normal: Sudoku::Grid::ALL_ORDS,
   }
 
-  attr_accessor :difficulty, :grid, :solver
+  attr_accessor :difficulty, :grid, :solver, :seeds
 
   def initialize options = {}
     defaults = {
+      seeds: 10,
       difficulty: 1,
     }
     config = defaults.merge(options)
 
+    @seeds = config[:seeds]
     @difficulty = config[:difficulty]
     @solver = Sudoku::Solver.new
   end
@@ -80,8 +82,9 @@ class Sudoku::Generator
       old = grid[ord]
       grid[ord] = nil
 
-      if within_bounds?(ord) && unique?
+      if within_bounds?(ord) && unique?(ord, old)
         filled -= 1
+        puts grid
       else 
         grid[ord] = old
       end
@@ -95,16 +98,42 @@ class Sudoku::Generator
       solver.grid = Sudoku::Grid.new
       solver.solve
 
-      break unless solver.unsolvable?
+      break unless solver.unsolved?
     end
     
     self.grid = solver.solution
     self
   end
+  
+  def random_set count, &block
+    Sudoku::Grid::ALL_ORDS.sample(count).each do |ord|
+      block.call(ord)
+    end
+  end
 
-  def unique? 
-    solver.solve
-    solver.unique?
+  def seed
+    Sudoku::Grid.new.tap do |grid|
+      loop do
+        random_set(seeds) do |ord|
+          grid[ord] = grid.valid_values(ord).sample(1)
+        end
+
+        break if grid.valid?
+        grid = Sudoku::Grid.new
+      end
+    end
+  end
+
+  def unique? ord, old
+    !grid.valid_values(ord).any? do |value|
+      next if value == old
+
+      grid[ord] = value
+      solver.solve
+      grid[ord] = nil
+
+      solver.solution
+    end
   end
 
   def within_bounds? ord

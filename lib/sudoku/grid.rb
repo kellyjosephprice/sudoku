@@ -1,7 +1,7 @@
 require_relative '../sudoku'
 
 class Sudoku::Grid
-  attr_accessor :array, :possible
+  attr_accessor :array
 
   ALL_ORDS = (0...9).to_a.product((0...9).to_a).freeze
 
@@ -77,7 +77,6 @@ class Sudoku::Grid
     config = defaults.merge(options)
 
     @array = config[:array] || clear
-    init_possible
   end
 
   def [] ord
@@ -132,16 +131,6 @@ class Sudoku::Grid
     Sudoku::Grid.new array: array_dup
   end
 
-  def init_possible
-    @possible = Hash.new { Hash.new }
-
-    ALL_ORDS.each do |ord|
-      effected_sets(ord) do |other|
-        possible[ord][@array[other[0]][other[1]]] = true
-      end
-    end
-  end
-
   def first_empty
     ALL_ORDS.find do |ord|
       @array[ord[0]][ord[1]].nil?
@@ -155,17 +144,13 @@ class Sudoku::Grid
   end
 
   def no_dups? set
-    count = []
-
-    set.each do |ord|
-      value = array[ord[0]][ord[1]]
-      unless value.nil?
-        return false if count[value]
-        count[value] = 1
-      end
-    end
-
-    true  
+    set.reject do |ord|
+      @array[ord[0]][ord[1]].nil?
+    end.group_by do |ord| 
+      @array[ord[0]][ord[1]] 
+    end.select do |k, v| 
+      v.size > 1 
+    end.empty?
   end
 
   def to_a
@@ -197,6 +182,18 @@ class Sudoku::Grid
   def valid_square? ord
     Sudoku::Grid.effected_sets(ord).all? do |set|
       no_dups? set
+    end
+  end
+
+  def valid_values ord
+    return [] unless @array[ord[0]][ord[1]].nil?
+
+    values = Sudoku::Grid.effected_sets(ord).flatten(1).map do |other|
+      @array[other[0]][other[1]]
+    end
+
+    (1..9).reject do |value|
+      values.include? value
     end
   end
 

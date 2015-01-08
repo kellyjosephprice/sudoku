@@ -42,16 +42,6 @@ describe Sudoku::Solver do
       assert solver.unique?, "not unique"
       assert solver.solution == finished, "wrong solution"
     end
-
-    it "should generate a unique solution from empty" do
-      solver1 = Sudoku::Solver.new
-      solver2 = Sudoku::Solver.new
-
-      solver1.solve
-      solver2.solve
-
-      assert_operator solver1.grid, :!=, solver2.grid
-    end
   end
 
 end

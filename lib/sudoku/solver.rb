@@ -23,12 +23,8 @@ class Sudoku::Solver
 
   def solve
     @solutions = []
-    @grid = @grid.dup
 
-    begin
-      dfs
-    rescue NonUniqueSolutionError
-    end 
+    dfs
 
     solution
   end
@@ -41,25 +37,22 @@ class Sudoku::Solver
     solutions.count == 1
   end
 
-  def unsolvable?
+  def unsolved?
     solutions.empty?
   end
 
   private
   
   def dfs
-    cell = grid.minimum_remaining
+    cell = grid.first_empty
     return if cell.nil?
 
-    (1..9).select do |n|
-      grid[cell] = n
-      grid.valid_square? cell
-    end.shuffle.each do |n|
+    grid.valid_values(cell).shuffle.each do |n|
+      break if solution
       grid[cell] = n
 
       if grid.complete?
         solutions << grid.dup 
-        raise NonUniqueSolutionError unless unique?
         break
       end
 
@@ -69,7 +62,4 @@ class Sudoku::Solver
     grid[cell] = nil
   end
 
-end
-
-class NonUniqueSolutionError < RuntimeError
 end
