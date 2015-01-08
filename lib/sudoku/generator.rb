@@ -78,12 +78,13 @@ class Sudoku::Generator
     until diggable.empty? || filled == givens
       ord = diggable.shift
       old = grid[ord]
-      grid[ord] = nil
+      solver.set ord, nil
 
       if within_bounds?(ord) && unique?
         filled -= 1
+        p solver.counts
       else 
-        grid[ord] = old
+        solver.set ord, old
       end
     end
 
@@ -119,7 +120,6 @@ class Sudoku::Generator
 
   def within_bounds? ord
     return false if grid.all_not_empty.count < givens
-
     return true if 0 == bounds
     
     row = Sudoku::Grid.effected_row(ord)

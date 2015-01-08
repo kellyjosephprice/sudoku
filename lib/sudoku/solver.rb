@@ -20,6 +20,7 @@ class Sudoku::Solver
 
   def grid= new_grid
     @grid = new_grid
+    @solutions = []
     reset_counts
   end
 
