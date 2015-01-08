@@ -1,7 +1,7 @@
 require_relative '../sudoku'
 
 class Sudoku::Grid
-  attr_accessor :array
+  attr_accessor :array, :possible
 
   ALL_ORDS = (0...9).to_a.product((0...9).to_a).freeze
 
@@ -77,6 +77,7 @@ class Sudoku::Grid
     config = defaults.merge(options)
 
     @array = config[:array] || clear
+    init_possible
   end
 
   def [] ord
@@ -129,6 +130,16 @@ class Sudoku::Grid
     end
 
     Sudoku::Grid.new array: array_dup
+  end
+
+  def init_possible
+    @possible = Hash.new { Hash.new }
+
+    ALL_ORDS.each do |ord|
+      effected_sets(ord) do |other|
+        possible[ord][@array[other[0]][other[1]]] = true
+      end
+    end
   end
 
   def first_empty
