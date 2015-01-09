@@ -6,14 +6,46 @@ require 'pry'
 
 class Sudoku::Solver
 
-  attr_accessor :grid, :solutions, :counts
+  attr_accessor :grid, :solutions, :counts, :random
+  alias_method :random?, :random
 
   def initialize options = {}
-    defaults = {}
+    defaults = {
+      random: true
+    }
     config = defaults.merge(options)
 
     @grid = config[:grid] || Sudoku::Grid.new
     @solutions = []
+    @random = config[:random]
+  end
+
+  def empty cells
+    cells.each { |k,v| grid[k] = nil }
+  end
+
+  def fill cells
+    cells.each { |k,v| grid[k] = v.first }
+  end
+
+  def fill_all
+    {}.tap do |constraints|
+      loop do
+        more = find_constraints
+        break if more.empty?
+
+        constraints.merge! more
+        fill more
+      end
+    end
+  end
+
+  def find_constraints
+    grid.all_empty.each_with_object({}) do |ord, h|
+      h[ord] = grid.valid_values(ord)
+    end.select do |k, v|
+      v.count == 1
+    end
   end
 
   def grid= new_grid
@@ -42,24 +74,31 @@ class Sudoku::Solver
   end
 
   private
+
+  def values ord
+    random? ? grid.valid_values(ord).shuffle : grid.valid_values(ord)
+  end
   
   def dfs
-    cell = grid.minimum_remaining
-    return if cell.nil?
+    ord = grid.minimum_remaining
+    return if ord.nil?
 
-    grid.valid_values(cell).shuffle.each do |n|
+    values(ord).each do |n|
       break if solution
-      grid[cell] = n
+      grid[ord] = n
+
+      constraints = fill_all
 
       if grid.complete?
         solutions << grid.dup 
-        break
+      else 
+        dfs
       end
 
-      dfs
+      empty constraints
     end
 
-    grid[cell] = nil
+    grid[ord] = nil
   end
 
 end

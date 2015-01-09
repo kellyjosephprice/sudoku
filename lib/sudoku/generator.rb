@@ -32,7 +32,7 @@ class Sudoku::Generator
       givens: 22,
       bounds: 0,
       search: 100000,
-      sequence: :normal
+      sequence: :random
     }
   ]
 
@@ -41,18 +41,20 @@ class Sudoku::Generator
     normal: Sudoku::Grid::ALL_ORDS,
   }
 
-  attr_accessor :difficulty, :grid, :solver, :seeds
+  attr_accessor :difficulty, :grid, :solver, :seeds, :verbose
 
   def initialize options = {}
     defaults = {
       seeds: 10,
       difficulty: 1,
+      verbose: false
     }
     config = defaults.merge(options)
 
     @seeds = config[:seeds]
     @difficulty = config[:difficulty]
     @solver = Sudoku::Solver.new
+    @verbose = config[:verbose]
   end
 
   def bounds 
@@ -73,6 +75,7 @@ class Sudoku::Generator
 
   def dig
     solver.grid = grid
+    solver.random = false
     diggable = sequence.dup
     filled = 81
 
@@ -83,21 +86,22 @@ class Sudoku::Generator
 
       if within_bounds?(ord) && unique?(ord, old)
         filled -= 1
-        puts
-        puts grid
-        puts " -- #{filled} --"
+        if verbose
+          puts 
+          puts grid
+          puts " -- #{filled} -- "
+        end
       else 
         grid[ord] = old
       end
     end
-
-    grid.shuffle!
 
     self
   end
 
   def fill
     loop do
+      solver.random = true
       solver.grid = Sudoku::Grid.new
       solver.solve
 
@@ -106,25 +110,6 @@ class Sudoku::Generator
     
     self.grid = solver.solution.shuffle!
     self
-  end
-  
-  def random_set count, &block
-    Sudoku::Grid::ALL_ORDS.sample(count).each do |ord|
-      block.call(ord)
-    end
-  end
-
-  def seed
-    Sudoku::Grid.new.tap do |grid|
-      loop do
-        random_set(seeds) do |ord|
-          grid[ord] = grid.valid_values(ord).sample(1)
-        end
-
-        break if grid.valid?
-        grid = Sudoku::Grid.new
-      end
-    end
   end
 
   def unique? ord, old

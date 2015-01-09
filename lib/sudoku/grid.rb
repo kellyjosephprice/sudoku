@@ -63,6 +63,14 @@ class Sudoku::Grid
     [ row, col, grid ]
   end
 
+  def self.effected_ords ord
+    row  = ROWS[ord[0]]
+    col  = COLS[ord[1]]
+    grid = GRIDS[(ord[0] / 3 * 3) + (ord[1] / 3)]
+
+    row + col + grid
+  end
+
   def self.from_flat_array array
     Sudoku::Grid.new.tap do |grid|
       array.each do |ord, value|
@@ -121,12 +129,8 @@ class Sudoku::Grid
     first_empty.nil?
   end
 
-  def effected_ords ord, &block
-    Sudoku::Grid.effected_sets(ord).each do |set|
-      set.each do |ord|
-        block.call(ord)
-      end
-    end
+  def effected_ords ord
+    Sudoku::Grid.effected_sets(ord).flatten(1)
   end
 
   def dup
@@ -161,7 +165,6 @@ class Sudoku::Grid
     end.empty?
   end
 
-
   def shuffle!
     (2 + rand(3)).times do
       shuffle_rows!
@@ -194,6 +197,12 @@ class Sudoku::Grid
     end.join("\n").concat("\n")
   end
 
+  def to_string
+    @array.flatten.map do |value|
+      value.nil? ? " " : value
+    end.join ""
+  end
+
   def transpose!
     new_array = []
 
@@ -224,12 +233,14 @@ class Sudoku::Grid
   def valid_values ord
     return [] unless @array[ord[0]][ord[1]].nil?
 
-    values = Sudoku::Grid.effected_sets(ord).flatten(1).map do |other|
-      @array[other[0]][other[1]]
+    counts = Hash.new(0)
+
+    effected_ords(ord).each do |other|
+      counts[@array[other[0]][other[1]]] += 1
     end
 
     (1..9).reject do |value|
-      values.include? value
+      counts[value] > 0
     end
   end
 

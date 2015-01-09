@@ -17,20 +17,22 @@ namespace :benchmark do
 
   task :easy do
     n = 100
-    Benchmark.bm(12) do |x|
+    generator = Sudoku::Generator.new difficulty: 1
+
+    Benchmark.bm(14) do |x|
       x.report("level 2 (#{n}x):") do 
-        generator = Sudoku::Generator.new difficulty: 1
         n.times { generator.fill.dig }
       end
     end
   end
 
   task :hard do
-    n = 1
-    Benchmark.bm(12) do |x|
-      x.report("level 5 (#{1}x):") do 
-        generator = Sudoku::Generator.new difficulty: 4
-        1.times { generator.fill.dig }
+    n = 10
+    generator = Sudoku::Generator.new difficulty: 4
+
+    Benchmark.bm(13) do |x|
+      x.report("level 5 (#{n}x):") do 
+        n.times { generator.fill.dig }
       end
     end
   end
