@@ -1,7 +1,7 @@
 require_relative '../sudoku'
 
 class Sudoku::Grid
-  attr_accessor :array
+  attr_accessor :array, :cache
 
   ALL_ORDS = (0...9).to_a.product((0...9).to_a).freeze
 
@@ -71,6 +71,14 @@ class Sudoku::Grid
     end
   end
 
+  def self.from_s string
+    array = string.split("\n").map do |row|
+      row.split("\s")
+    end
+
+    Sudoku::Grid.new array: array
+  end
+
   def initialize options = {}
     defaults = {
     }
@@ -113,7 +121,7 @@ class Sudoku::Grid
     first_empty.nil?
   end
 
-  def effected_sets ord, &block
+  def effected_ords ord, &block
     Sudoku::Grid.effected_sets(ord).each do |set|
       set.each do |ord|
         block.call(ord)
@@ -139,7 +147,7 @@ class Sudoku::Grid
 
   def minimum_remaining
     all_empty.max_by do |ord|
-      Sudoku::Grid.effected_sets(ord).reject { |o| o.nil? }.count
+      Sudoku::Grid.effected_sets(ord).select { |o| o }.count
     end
   end
 
@@ -151,6 +159,27 @@ class Sudoku::Grid
     end.select do |k, v| 
       v.size > 1 
     end.empty?
+  end
+
+
+  def shuffle!
+    (2 + rand(3)).times do
+      shuffle_rows!
+      transpose!
+    end
+
+    self
+  end
+
+  def shuffle_rows!
+    grids = [ @array[0..2], @array[3..5], @array[6..8] ]
+    @array = grids.shuffle!.flatten(1)
+     
+    [0, 3, 6].each do |offset|
+      rows = (0..2).map { |y| @array[offset + y] }
+      rows.shuffle!
+      (0..2).each { |y| @array[offset + y] = rows[y] }
+    end
   end
 
   def to_a
@@ -165,12 +194,19 @@ class Sudoku::Grid
     end.join("\n").concat("\n")
   end
 
-  def self.from_s string
-    array = string.split("\n").map do |row|
-      row.split("\s")
+  def transpose!
+    new_array = []
+
+    9.times do |i|
+      new_array[i] = Array.new(9)
+
+      @array.each_with_index do |r,j|
+        new_array[i][j] = r[i]
+      end
     end
 
-    Sudoku::Grid.new array: array
+    @array = new_array
+    self
   end
 
   def valid?

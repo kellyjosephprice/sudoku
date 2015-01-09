@@ -1,7 +1,6 @@
 require_relative '../sudoku'
 require_relative '../sudoku/solver'
 require_relative '../sudoku/grid'
-require_relative 'grid'
 
 class Sudoku::Generator
   DIFFICULTY = [
@@ -84,11 +83,15 @@ class Sudoku::Generator
 
       if within_bounds?(ord) && unique?(ord, old)
         filled -= 1
+        puts
         puts grid
+        puts " -- #{filled} --"
       else 
         grid[ord] = old
       end
     end
+
+    grid.shuffle!
 
     self
   end
@@ -101,7 +104,7 @@ class Sudoku::Generator
       break unless solver.unsolved?
     end
     
-    self.grid = solver.solution
+    self.grid = solver.solution.shuffle!
     self
   end
   

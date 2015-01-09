@@ -154,4 +154,5 @@ describe Sudoku::Grid do
       assert_equal [0,2], seeded.minimum_remaining
     end
   end
+
 end

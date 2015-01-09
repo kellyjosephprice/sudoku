@@ -44,7 +44,7 @@ class Sudoku::Solver
   private
   
   def dfs
-    cell = grid.first_empty
+    cell = grid.minimum_remaining
     return if cell.nil?
 
     grid.valid_values(cell).shuffle.each do |n|
