@@ -13,26 +13,39 @@ end
 namespace :benchmark do
   task default: %w[easy]
 
-  task all: %w[easy hard]
+  task all: %w[boring easy medium hard insane]
 
-  task :easy do
-    n = 1000
-    generator = Sudoku::Generator.new difficulty: 1
+  difficulties = {
+    boring: {
+      difficulty: 0,
+      count: 1000
+    },
+    easy: {
+      difficulty: 1,
+      count: 1000
+    },
+    medium: {
+      difficulty: 2,
+      count: 500
+    },
+    hard: {
+      difficulty: 3,
+      count: 200
+    },
+    insane: {
+      difficulty: 4,
+      count: 100
+    },
+  }
 
-    Benchmark.bm(14) do |x|
-      x.report("level 2 (#{n}x):") do 
-        n.times { generator.fill.dig }
-      end
-    end
-  end
+  difficulties.each do |k, v|
+    task k do 
+      generator = Sudoku::Generator.new difficulty: v[:difficulty]
 
-  task :hard do
-    n = 100
-    generator = Sudoku::Generator.new difficulty: 4
-
-    Benchmark.bm(13) do |x|
-      x.report("level 5 (#{n}x):") do 
-        n.times { generator.fill.dig }
+      Benchmark.bm(15) do |x|
+        x.report("#{k} (#{v[:count]}x):") do 
+          v[:count].times { generator.fill.dig }
+        end
       end
     end
   end

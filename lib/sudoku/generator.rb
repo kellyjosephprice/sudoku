@@ -20,13 +20,13 @@ class Sudoku::Generator
       givens: 32,
       bounds: 3,
       search: 1000,
-      sequence: :jumping
+      sequence: :random
     },
     {
       givens: 28,
       bounds: 2,
       search: 10000,
-      sequence: :wander
+      sequence: :random
     },
     {
       givens: 22,
@@ -102,7 +102,7 @@ class Sudoku::Generator
       end
     end
 
-    ord = set.shift
+    set.shift
   end
 
   def fill
