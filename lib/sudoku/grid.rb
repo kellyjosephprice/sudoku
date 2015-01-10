@@ -221,7 +221,7 @@ class Sudoku::Grid
   end
 
   def valid_square? ord
-    Sudoku::Grid::EFFECTED_ORDS[ord].all? do |set|
+    Sudoku::Grid::EFFECTED_SETS[ord].all? do |set|
       no_dups? set
     end
   end
