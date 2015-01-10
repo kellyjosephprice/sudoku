@@ -24,27 +24,16 @@ class Sudoku::Solver
     cells.each { |k,v| grid[k] = nil }
   end
 
-  def fill cells
-    cells.each { |k,v| grid[k] = v.first }
-  end
-
   def fill_all
     {}.tap do |constraints|
-      loop do
-        more = find_constraints
-        break if more.empty?
+        grid.all_empty.each do |ord|
+          values = grid.valid_values(ord)
 
-        constraints.merge! more
-        fill more
-      end
-    end
-  end
-
-  def find_constraints
-    grid.all_empty.each_with_object({}) do |ord, h|
-      h[ord] = grid.valid_values(ord)
-    end.select do |k, v|
-      v.count == 1
+          if 1 == values.count
+            grid[ord] = values.first
+            constraints[ord] = values.first
+          end
+        end
     end
   end
 
@@ -87,7 +76,7 @@ class Sudoku::Solver
       break if solution
       grid[ord] = n
 
-      constraints = fill_all
+      cons = fill_all
 
       if grid.complete?
         solutions << grid.dup 
@@ -95,7 +84,7 @@ class Sudoku::Solver
         dfs
       end
 
-      empty constraints
+      empty cons
     end
 
     grid[ord] = nil

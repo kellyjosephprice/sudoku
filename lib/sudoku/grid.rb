@@ -43,6 +43,22 @@ class Sudoku::Grid
 
   ALL_SETS = (ROWS + COLS + GRIDS).freeze
 
+  EFFECTED_SETS = ALL_ORDS.each_with_object({}) do |ord, hash|
+    row  = ROWS[ord[0]]
+    col  = COLS[ord[1]]
+    grid = GRIDS[(ord[0] / 3 * 3) + (ord[1] / 3)]
+
+    hash[ord] = [row, col, grid]
+  end.freeze
+
+  EFFECTED_ORDS = ALL_ORDS.each_with_object({}) do |ord, hash|
+    row  = ROWS[ord[0]]
+    col  = COLS[ord[1]]
+    grid = GRIDS[(ord[0] / 3 * 3) + (ord[1] / 3)]
+
+    hash[ord] = row + col + grid
+  end.freeze
+
   def self.effected_row ord
     ROWS[ord[0]]
   end
@@ -53,22 +69,6 @@ class Sudoku::Grid
 
   def self.effected_grid ord
     GRIDS[ord[0] / 3 * 3 + ord[1] / 3]
-  end
-
-  def self.effected_sets ord
-    row  = ROWS[ord[0]]
-    col  = COLS[ord[1]]
-    grid = GRIDS[(ord[0] / 3 * 3) + (ord[1] / 3)]
-
-    [ row, col, grid ]
-  end
-
-  def self.effected_ords ord
-    row  = ROWS[ord[0]]
-    col  = COLS[ord[1]]
-    grid = GRIDS[(ord[0] / 3 * 3) + (ord[1] / 3)]
-
-    row + col + grid
   end
 
   def self.from_flat_array array
@@ -129,10 +129,6 @@ class Sudoku::Grid
     first_empty.nil?
   end
 
-  def effected_ords ord
-    Sudoku::Grid.effected_sets(ord).flatten(1)
-  end
-
   def dup
     array_dup = array.map do |row|
       row.map do |value|
@@ -151,7 +147,7 @@ class Sudoku::Grid
 
   def minimum_remaining
     all_empty.max_by do |ord|
-      Sudoku::Grid.effected_sets(ord).select { |o| o }.count
+      Sudoku::Grid::EFFECTED_ORDS[ord].select { |o| o }.count
     end
   end
 
@@ -225,7 +221,7 @@ class Sudoku::Grid
   end
 
   def valid_square? ord
-    Sudoku::Grid.effected_sets(ord).all? do |set|
+    Sudoku::Grid::EFFECTED_ORDS[ord].all? do |set|
       no_dups? set
     end
   end
@@ -235,7 +231,7 @@ class Sudoku::Grid
 
     counts = Hash.new(0)
 
-    effected_ords(ord).each do |other|
+    Sudoku::Grid::EFFECTED_ORDS[ord].each do |other|
       counts[@array[other[0]][other[1]]] += 1
     end
 

@@ -16,7 +16,7 @@ namespace :benchmark do
   task all: %w[easy hard]
 
   task :easy do
-    n = 100
+    n = 1000
     generator = Sudoku::Generator.new difficulty: 1
 
     Benchmark.bm(14) do |x|
@@ -27,7 +27,7 @@ namespace :benchmark do
   end
 
   task :hard do
-    n = 10
+    n = 100
     generator = Sudoku::Generator.new difficulty: 4
 
     Benchmark.bm(13) do |x|
