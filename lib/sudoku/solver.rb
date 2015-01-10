@@ -26,14 +26,13 @@ class Sudoku::Solver
 
   def fill_all
     {}.tap do |constraints|
-        grid.all_empty.each do |ord|
-          values = grid.valid_values(ord)
+      grid.all_empty.each do |ord|
+        values = grid.valid_values(ord)
+        next unless 1 == values.count
 
-          if 1 == values.count
-            grid[ord] = values.first
-            constraints[ord] = values.first
-          end
-        end
+        grid[ord] = values.first
+        constraints[ord] = values.first
+      end
     end
   end
 

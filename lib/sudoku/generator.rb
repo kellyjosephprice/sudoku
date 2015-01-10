@@ -80,23 +80,29 @@ class Sudoku::Generator
     filled = 81
 
     until diggable.empty? || filled == givens
-      ord = diggable.shift
+      ord = get_next diggable
       old = grid[ord]
       grid[ord] = nil
 
       if within_bounds?(ord) && unique?(ord, old)
         filled -= 1
-        if verbose
-          puts 
-          puts grid
-          puts " -- #{filled} -- "
-        end
+        output filled if verbose
       else 
         grid[ord] = old
       end
     end
 
     self
+  end
+
+  def get_next set
+    set.sort_by! do |ord|
+      Sudoku::Grid::EFFECTED_ORDS[ord].count do |other|
+        grid[other]
+      end
+    end
+
+    ord = set.shift
   end
 
   def fill
@@ -110,6 +116,12 @@ class Sudoku::Generator
     
     self.grid = solver.solution.shuffle!
     self
+  end
+
+  def output filled
+    puts 
+    puts grid
+    puts " -- #{filled} -- "
   end
 
   def unique? ord, old

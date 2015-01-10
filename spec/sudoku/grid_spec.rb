@@ -49,6 +49,21 @@ describe Sudoku::Grid do
     ]
   end
 
+  let(:swap) do
+    nums = [2, 1, 3, 4, 5, 6, 7, 8, 9]
+    [
+      nums,
+      nums.rotate(3),
+      nums.rotate(6),
+      nums.rotate(1),
+      nums.rotate(4),
+      nums.rotate(7),
+      nums.rotate(2),
+      nums.rotate(5),
+      nums.rotate(8),
+    ]
+  end
+
   it "should create a 9x9 grid" do
     assert_equal 9, grid.array.size 
     assert_equal 9, grid.array[0].size 
@@ -152,6 +167,26 @@ describe Sudoku::Grid do
 
     it "should return a list of empty cells sorted by their constraints" do
       assert_equal [0,2], seeded.minimum_remaining
+    end
+  end
+
+  describe "#swap_values!" do
+    let (:grid) { Sudoku::Grid.new(array: valid) }
+    let (:swapped) { Sudoku::Grid.new(array: swap) }
+
+    it "should swap values" do
+      grid.swap_values! 1, 2
+
+      assert_equal swapped, grid
+    end
+  end
+
+  describe "#shuffle!" do
+    let (:grid) { Sudoku::Grid.new(array: valid) }
+
+    it "should still be valid" do
+      grid.shuffle!
+      assert grid.valid?, "it's not valid!"
     end
   end
 

@@ -167,6 +167,11 @@ class Sudoku::Grid
       transpose!
     end
 
+    (1 + rand(9)).times do 
+      nums = (1..9).to_a.sample(2)
+      swap_values! *nums
+    end
+
     self
   end
 
@@ -179,6 +184,17 @@ class Sudoku::Grid
       rows.shuffle!
       (0..2).each { |y| @array[offset + y] = rows[y] }
     end
+  end
+
+  def swap_values! one, two
+    ALL_ORDS.each do |ord|
+      if self[ord] == one
+        self[ord] = two
+      elsif self[ord] == two
+        self[ord] = one
+      end
+    end
+    self
   end
 
   def to_a
