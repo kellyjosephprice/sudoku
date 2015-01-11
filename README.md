@@ -5,19 +5,20 @@ A sudoku generator.
 
 Current Benchmarks
 ==================
-% rake benchmark:all
-                      user     system      total        real
-boring (1000x):  44.410000   0.000000  44.410000 ( 44.399981)
-average rating: 0.14
-                      user     system      total        real
-easy (1000x):    57.640000   0.000000  57.640000 ( 57.607509)
-average rating: 0.64
-                      user     system      total        real
-medium (500x):   96.210000   0.010000  96.220000 ( 96.195151)
-average rating: 1.63
-                      user     system      total        real
-hard (200x):    130.500000   0.010000 130.510000 (130.449767)
-average rating: 2.65
-                      user     system      total        real
-insane (100x):  308.110000   0.000000 308.110000 (308.019246)
-average rating: 5.64
+
+    % rake benchmark:all
+                          user     system      total        real
+    boring (1000x):  39.090000   0.000000  39.090000 ( 39.124782)
+    average rating: 0.4
+                          user     system      total        real
+    easy (1000x):    48.010000   0.010000  48.020000 ( 48.072421)
+    average rating: 1.58
+                          user     system      total        real
+    medium (500x):   49.330000   0.010000  49.340000 ( 49.375186)
+    average rating: 2.57
+                          user     system      total        real
+    hard (200x):     55.390000   0.110000  55.500000 ( 55.564095)
+    average rating: 3.26
+                          user     system      total        real
+    insane (100x):  103.950000   0.040000 103.990000 (104.145333)
+    average rating: 6.07
