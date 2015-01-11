@@ -35,11 +35,10 @@ describe Sudoku::Solver do
     let(:seeded)   { Sudoku::Grid.new(array: seeds) }
     let(:finished) { Sudoku::Grid.new(array: complete) }
 
-    it "should find a unique solution" do
+    it "should find a solution" do
       solver = Sudoku::Solver.new(grid: seeded)
       solver.solve
 
-      assert solver.unique?, "not unique"
       assert solver.solution == finished, "wrong solution"
     end
   end

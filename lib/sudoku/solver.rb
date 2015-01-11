@@ -6,25 +6,25 @@ require 'pry'
 
 class Sudoku::Solver
 
-  attr_accessor :grid, :solutions, :counts, :random
+  attr_accessor :grid, :solution, :count, :random
   alias_method :random?, :random
 
   def initialize options = {}
     defaults = {
-      random: true
+      random: true,
     }
     config = defaults.merge(options)
 
     @grid = config[:grid] || Sudoku::Grid.new
-    @solutions = []
     @random = config[:random]
+    @count = 0
   end
 
   def empty cells
     cells.each { |k,v| grid[k] = nil }
   end
 
-  def fill_all
+  def fill_all 
     {}.tap do |constraints|
       grid.all_empty.each do |ord|
         values = grid.valid_values(ord)
@@ -38,27 +38,25 @@ class Sudoku::Solver
 
   def grid= new_grid
     @grid = new_grid
-    @solutions = []
+    @solution = nil
+    @count = 0
   end
 
   def solve
-    @solutions = []
+    @solution = nil
+    @count = 0
 
     dfs
 
     solution
   end
 
-  def solution 
-    solutions.first
-  end
-
-  def unique?
-    solutions.count == 1
+  def solved?
+    !!solution
   end
 
   def unsolved?
-    solutions.empty?
+    solution.nil?
   end
 
   private
@@ -71,14 +69,16 @@ class Sudoku::Solver
     ord = grid.minimum_remaining
     return if ord.nil?
 
-    values(ord).each do |n|
-      break if solution
-      grid[ord] = n
+    @count += 1
 
+    values(ord).each do |n|
+      break if solved?
+      grid[ord] = n
+      
       cons = fill_all
 
       if grid.complete?
-        solutions << grid.dup 
+        @solution = grid.dup 
       else 
         dfs
       end

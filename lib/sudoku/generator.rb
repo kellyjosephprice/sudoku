@@ -41,7 +41,7 @@ class Sudoku::Generator
     normal: Sudoku::Grid::ALL_ORDS,
   }
 
-  attr_accessor :difficulty, :grid, :solver, :seeds, :verbose
+  attr_accessor :difficulty, :grid, :solver, :seeds, :verbose, :filled
 
   def initialize options = {}
     defaults = {
@@ -55,6 +55,7 @@ class Sudoku::Generator
     @difficulty = config[:difficulty]
     @solver = Sudoku::Solver.new
     @verbose = config[:verbose]
+    @filled = 81
   end
 
   def bounds 
@@ -73,11 +74,15 @@ class Sudoku::Generator
     SEQUENCE[DIFFICULTY[difficulty][:sequence]]
   end
 
+  def rating
+    ((81 / @filled) * Math.log10(solver.count)).round(1)
+  end
+
   def dig
     solver.grid = grid
     solver.random = false
     diggable = sequence.dup
-    filled = 81
+    @filled = 81
 
     until diggable.empty? || filled == givens
       ord = get_next diggable
@@ -85,8 +90,8 @@ class Sudoku::Generator
       grid[ord] = nil
 
       if within_bounds?(ord) && unique?(ord, old)
-        filled -= 1
-        output filled if verbose
+        @filled -= 1
+        output if verbose
       else 
         grid[ord] = old
       end
@@ -118,7 +123,7 @@ class Sudoku::Generator
     self
   end
 
-  def output filled
+  def output
     puts 
     puts grid
     puts " -- #{filled} -- "

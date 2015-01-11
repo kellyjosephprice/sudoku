@@ -41,12 +41,22 @@ namespace :benchmark do
   difficulties.each do |k, v|
     task k do 
       generator = Sudoku::Generator.new difficulty: v[:difficulty]
+      rating_total = 0
 
       Benchmark.bm(15) do |x|
         x.report("#{k} (#{v[:count]}x):") do 
-          v[:count].times { generator.fill.dig }
+          v[:count].times do 
+            generator.fill.dig
+
+            generator.solver.grid = generator.grid
+            generator.solver.solve
+
+            rating_total += generator.rating
+          end
         end
       end
+
+      puts "average rating: #{(rating_total / v[:count]).round(2)}"
     end
   end
 end
