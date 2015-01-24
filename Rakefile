@@ -1,6 +1,8 @@
 require 'rake/testtask'
 require 'benchmark'
-require_relative 'lib/sudoku/generator'
+require 'bundler/gem_tasks'
+
+require_relative 'lib/udokus'
 
 task default: %w[spec]
 
@@ -11,7 +13,7 @@ Rake::TestTask.new do |t|
 end
 
 def run_benchmark name, difficulty, count
-  generator = Sudoku::Generator.new difficulty: difficulty
+  generator = Udokus::Generator.new difficulty: difficulty
   rating_total = 0
 
   Benchmark.bm(15) do |x|
