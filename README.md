@@ -1,4 +1,4 @@
-Sudoku
+Udokus
 ======
 
 A sudoku generator.
