@@ -1,16 +1,12 @@
-require 'rake/testtask'
 require 'benchmark'
 require 'bundler/gem_tasks'
+require 'rspec/core/rake_task'
 
 require_relative 'lib/udokus'
 
 task default: %w[spec]
 
-Rake::TestTask.new do |t|
-  t.name = "spec"
-  t.libs << "spec"
-  t.test_files = FileList['spec/**/*_spec.rb']
-end
+RSpec::Core::RakeTask.new(:spec)
 
 def run_benchmark name, difficulty, count
   generator = Udokus::Generator.new difficulty: difficulty
