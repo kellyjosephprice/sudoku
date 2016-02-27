@@ -12,6 +12,7 @@ class Udokus::Solver
     @grid = config[:grid] || Udokus::Grid.new
     @random = config[:random]
     @count = 0
+    @solution = nil
   end
 
   def empty cells

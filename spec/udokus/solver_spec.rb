@@ -36,7 +36,7 @@ describe Udokus::Solver do
       solver = Udokus::Solver.new(grid: seeded)
       solver.solve
 
-      assert solver.solution == finished, "wrong solution"
+      expect(solver.solution).to eq(finished)
     end
   end
 

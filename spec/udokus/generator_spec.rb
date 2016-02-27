@@ -66,11 +66,11 @@ describe Udokus::Generator do
     let(:grid) { generator.fill.grid }
 
     it "should fill a grid" do
-      assert_equal true, complete?(grid)
+      expect(count(grid)).to eq(81)
     end
 
     it "should be a valid grid" do
-      assert_equal true, valid?(grid)
+      expect(valid?(grid)).to be true
     end
   end
 
@@ -79,28 +79,19 @@ describe Udokus::Generator do
     let(:solver) { Udokus::Solver.new grid: grid }
 
     it "should remove squares from a grid" do
-      assert_equal false, complete?(grid)
+      expect(count(grid)).to be < 81
     end
 
     it "should create a valid puzzle" do
-      assert_equal true, valid?(grid)
+      expect(valid?(grid)).to be true
     end
 
     it "should be unique" do
-      unique = true
-      begin
-        solver.solve
-      rescue NonUniqueSolutionError
-        unique = false
-      end
-
-      assert_equal true, unique
+      expect { solver.solve }.not_to raise_error
     end
 
     it "should contain a count greater than or equal to givens" do
-      assert_operator generator.givens, :<=, count(grid)
+      expect(generator.givens).to be <= count(grid)
     end
-    
   end
-
 end

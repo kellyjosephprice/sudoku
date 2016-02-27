@@ -77,9 +77,9 @@ class Udokus::Grid
     end
   end
 
-  def self.from_s string
+  def self.from_s string, delimeter = "\s"
     array = string.split("\n").map do |row|
-      row.split("\s")
+      row.split(delimeter).map(&:to_i).map { |c| c <= 0 ? nil : c }
     end
 
     Udokus::Grid.new array: array
@@ -102,7 +102,7 @@ class Udokus::Grid
   end
 
   def == other
-    self.array == other.array
+    @array == other.array
   end
 
   def all_empty
@@ -118,7 +118,7 @@ class Udokus::Grid
   end
 
   def clear 
-    self.array = Array.new(9) do
+    @array = Array.new(9) do
       Array.new(9)
     end
   end

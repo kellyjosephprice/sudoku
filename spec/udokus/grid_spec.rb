@@ -62,19 +62,19 @@ describe Udokus::Grid do
   end
 
   it "should create a 9x9 grid" do
-    assert_equal 9, grid.array.size 
-    assert_equal 9, grid.array[0].size 
+    expect(grid.array.size).to eq(9)
+    expect(grid.array[0].size).to eq(9)
   end
 
   describe "#valid?" do
     it "should detect a valid puzzle" do
       grid.array = valid
-      assert_equal true, grid.valid?
+      expect(grid.valid?).to be true
     end
 
     it "should detect an invalid puzzle" do
       grid.array = invalid
-      assert_equal false, grid.valid?
+      expect(grid.valid?).to be false
     end
   end
 
@@ -86,11 +86,11 @@ describe Udokus::Grid do
     end
 
     it "should detect that a square is valid" do
-      assert_equal true, bad.valid_square?([8, 8])
+      expect(bad.valid_square?([8, 8])).to be true
     end
 
     it "should detect an invalid square" do
-      assert_equal false, bad.valid_square?([0, 0])
+      expect(bad.valid_square?([0, 0])).to be false
     end
   end
 
@@ -108,8 +108,8 @@ describe Udokus::Grid do
     end
 
     it "returns the next 'sequential' empty cell" do
-      assert_equal [0,0], first.first_empty
-      assert_equal [5,3], other.first_empty
+      expect(first.first_empty).to eq([0,0])
+      expect(other.first_empty).to eq([5,3])
     end
   end
 
@@ -125,11 +125,11 @@ describe Udokus::Grid do
     end
 
     it "should detect a complete grid" do
-      assert_equal true, complete.complete?
+      expect(complete.complete?).to be true
     end
 
     it "should detect an incomplete grid" do
-      assert_equal false, incomplete.complete?
+      expect(incomplete.complete?).to be false
     end
   end
 
@@ -137,11 +137,11 @@ describe Udokus::Grid do
     let(:grid_clone) { grid.dup }
 
     it "should create a new object" do
-      refute_same grid, grid_clone
+      expect(grid.__id__).not_to eq(grid_clone.__id__)
     end
 
     it "they should be equivalent" do
-      assert_equal true, grid == grid_clone
+      expect(grid).to eq(grid_clone)
     end
   end
 
@@ -151,11 +151,11 @@ describe Udokus::Grid do
     let(:different) { Udokus::Grid.new(array: invalid) }
 
     it "should detect similar grids" do
-      assert_equal true, first == same
+      expect(first).to eq(same)
     end
 
     it "should detect dissimilar grids" do
-      assert_equal false, first == different
+      expect(first).not_to eq(different)
     end
   end
 
@@ -163,7 +163,7 @@ describe Udokus::Grid do
     let(:seeded) { Udokus::Grid.new(array: seeds_mvr) }
 
     it "should return a list of empty cells sorted by their constraints" do
-      assert_equal [0,2], seeded.minimum_remaining
+      expect(seeded.minimum_remaining).to eq([0,2])
     end
   end
 
@@ -173,8 +173,7 @@ describe Udokus::Grid do
 
     it "should swap values" do
       grid.swap_values! 1, 2
-
-      assert_equal swapped, grid
+      expect(swapped).to eq(grid)
     end
   end
 
@@ -183,8 +182,7 @@ describe Udokus::Grid do
 
     it "should still be valid" do
       grid.shuffle!
-      assert grid.valid?, "it's not valid!"
+      expect(grid).to be_valid
     end
   end
-
 end
