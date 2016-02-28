@@ -1,6 +1,7 @@
 require 'benchmark'
 require 'bundler/gem_tasks'
 require 'rspec/core/rake_task'
+require 'descriptive_statistics'
 
 require_relative 'lib/udokus'
 
@@ -10,9 +11,11 @@ RSpec::Core::RakeTask.new(:spec)
 
 def run_benchmark name, difficulty, count
   generator = Udokus::Generator.new difficulty: difficulty
-  rating_total = 0
+  ratings = []
 
   Benchmark.bm(15) do |x|
+    ratings = []
+
     x.report("#{name} (#{count}x):") do 
       count.times do 
         generator.fill.dig
@@ -20,12 +23,12 @@ def run_benchmark name, difficulty, count
         generator.solver.grid = generator.grid
         generator.solver.solve
 
-        rating_total += generator.rating
+        ratings << generator.rating
       end
     end
   end
 
-  puts "average rating: #{(rating_total / count).round(2)}"
+  puts "mean rating: #{ratings.mean.round(2)} ± #{ratings.standard_deviation.round(2)}"
 end
 
 namespace :benchmark do
