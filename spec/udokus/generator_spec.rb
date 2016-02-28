@@ -87,6 +87,7 @@ describe Udokus::Generator do
     end
 
     it "should be unique" do
+      skip "This is no longer how we resolve uniqueness"
       expect { solver.solve }.not_to raise_error
     end
 
